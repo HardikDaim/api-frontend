@@ -135,7 +135,12 @@ function App() {
                 >
                   Select Filters
                   <span className="float-right text-xl text-gray-500">
-                    {isDropdownOpen ? <RiArrowDropDownLine /> : <RiArrowDropUpLine />} {/* Upward and downward arrows */}
+                    {isDropdownOpen ? (
+                      <RiArrowDropDownLine />
+                    ) : (
+                      <RiArrowDropUpLine />
+                    )}{" "}
+                    {/* Upward and downward arrows */}
                   </span>
                 </button>
                 {isDropdownOpen && (
@@ -144,14 +149,19 @@ function App() {
                       (filter) => (
                         <div
                           key={filter}
-                          className={`p-2 cursor-pointer hover:bg-gray-100 ${
+                          className={`p-2 cursor-pointer ${
                             selectedFilters.includes(filter)
-                              ? "bg-blue-100"
+                              ? "bg-gray-100"
                               : ""
                           }`}
                           onClick={() => handleFilterClick(filter)}
                         >
                           {filter}
+                          {selectedFilters.includes(filter) && (
+                            <span className="float-right text-green-500 cursor-pointer">
+                              &#10003;
+                            </span>
+                          )}
                         </div>
                       )
                     )}
@@ -166,7 +176,7 @@ function App() {
                   >
                     {filter}
                     <button
-                      className="ml-2 text-red-500"
+                      className="ml-2 text-red-500 cursor-pointer"
                       onClick={() =>
                         setSelectedFilters((prev) =>
                           prev.filter((f) => f !== filter)
