@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { RiArrowDropUpLine, RiArrowDropDownLine } from "react-icons/ri";
 
 function App() {
   const [input, setInput] = useState("");
@@ -6,6 +7,7 @@ function App() {
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to manage dropdown visibility
 
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
@@ -29,27 +31,48 @@ function App() {
 
       const result = await res.json();
 
+      // Ensure the response contains the expected keys
+      if (!result.alphabets || !result.numbers || !result.highest_alphabet) {
+        throw new Error("Invalid response from the server.");
+      }
+
       setResponse(result);
       setLoading(false);
       setError("");
     } catch (err) {
-      setError("Invalid JSON input. Please check your input and try again.");
+      setError(
+        err.message ||
+          "Invalid JSON input. Please check your input and try again."
+      );
       setResponse(null);
       setLoading(false);
     }
   };
 
-  const handleFilterChange = (e) => {
-    // Extract selected options and update state
-    const options = Array.from(e.target.selectedOptions, (option) => option.value);
-    setSelectedFilters(options);
+  // Reset selected filters when a new response is received
+  useEffect(() => {
+    if (response) {
+      setSelectedFilters([]);
+    }
+  }, [response]);
+
+  const handleFilterClick = (filter) => {
+    setIsDropdownOpen(false); // Close the dropdown
+    // Toggle the filter in the selectedFilters array
+    if (selectedFilters.includes(filter)) {
+      setSelectedFilters((prev) => prev.filter((f) => f !== filter));
+    } else {
+      setSelectedFilters((prev) => [...prev, filter]);
+    }
   };
 
   const renderFilteredResponse = () => {
-    if (!response) return null;
+    if (!response || selectedFilters.length === 0) {
+      return null; // Show nothing if no filters are selected
+    }
 
     return (
-      <div className="mt-4">
+      <div className="mt-4 space-y-2">
         {/* Display Alphabets if selected */}
         {selectedFilters.includes("Alphabets") && response.alphabets && (
           <p className="text-blue-600">
@@ -103,17 +126,59 @@ function App() {
 
         {response && (
           <div className="mt-6">
-            <label className="block text-gray-700">Filter Response:</label>
-            <select
-              multiple
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onChange={handleFilterChange}
-              value={selectedFilters}
-            >
-              <option value="Alphabets">Alphabets</option>
-              <option value="Numbers">Numbers</option>
-              <option value="Highest Alphabet">Highest Alphabet</option>
-            </select>
+            <div className="relative">
+              {/* Custom Dropdown */}
+              <div className="relative">
+                <button
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 text-left"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  Select Filters
+                  <span className="float-right text-xl text-gray-500">
+                    {isDropdownOpen ? <RiArrowDropDownLine /> : <RiArrowDropUpLine />} {/* Upward and downward arrows */}
+                  </span>
+                </button>
+                {isDropdownOpen && (
+                  <div className="absolute z-10 bg-white border border-gray-300 rounded-lg my-1 w-full">
+                    {["Alphabets", "Numbers", "Highest Alphabet"].map(
+                      (filter) => (
+                        <div
+                          key={filter}
+                          className={`p-2 cursor-pointer hover:bg-gray-100 ${
+                            selectedFilters.includes(filter)
+                              ? "bg-blue-100"
+                              : ""
+                          }`}
+                          onClick={() => handleFilterClick(filter)}
+                        >
+                          {filter}
+                        </div>
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2 mt-4">
+                {selectedFilters.map((filter) => (
+                  <span
+                    key={filter}
+                    className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full flex items-center"
+                  >
+                    {filter}
+                    <button
+                      className="ml-2 text-red-500"
+                      onClick={() =>
+                        setSelectedFilters((prev) =>
+                          prev.filter((f) => f !== filter)
+                        )
+                      }
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
             {renderFilteredResponse()}
           </div>
         )}
