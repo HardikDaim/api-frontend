@@ -6,16 +6,13 @@ function App() {
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [error, setError] = useState("");
 
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
 
   const handleSubmit = async () => {
     try {
       // Validate JSON input
       const data = JSON.parse(input);
-      if (!Array.isArray(data.data)) {
-        throw new Error("Input must be a JSON object with a 'data' array.");
-      }
 
       // Call the backend API
       const res = await fetch(`${API_URL}/bfhl`, {
@@ -24,6 +21,7 @@ function App() {
         body: JSON.stringify(data),
       });
       const result = await res.json();
+      console.log("Response from API:", result);
       setResponse(result);
       setError("");
     } catch (err) {
