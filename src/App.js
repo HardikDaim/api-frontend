@@ -5,6 +5,7 @@ function App() {
   const [response, setResponse] = useState(null);
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [error, setError] = useState("");
+  const [loading, setLoading ] = useState(false);
 
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
@@ -13,6 +14,7 @@ function App() {
     try {
       // Validate JSON input
       const data = JSON.parse(input);
+      setLoading(true);
 
       // Call the backend API
       const res = await fetch(`${API_URL}/bfhl`, {
@@ -23,6 +25,7 @@ function App() {
       const result = await res.json();
       console.log("Response from API:", result);
       setResponse(result);
+      setLoading(false);
       setError("");
     } catch (err) {
       setError("Invalid JSON input. Please check your input and try again.");
@@ -82,6 +85,8 @@ function App() {
         >
           Submit
         </button>
+
+        {loading && <p className="text-blue-500 text-center mt-4">Loading...</p>}
 
         {response && (
           <div className="mt-6">
